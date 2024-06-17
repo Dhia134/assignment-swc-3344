@@ -1,0 +1,282 @@
+import java.io.*;
+import java.util.*;
+
+public class OrderManagementSystem {
+    private static ArrayList<Order> orderList = new ArrayList<>();
+
+    public static void main(String[] args) {
+        loadOrdersFromFile("C:/Users/HP/Downloads/order.txt");
+
+        Scanner scanner = new Scanner(System.in);
+
+        boolean exit = false;
+        while (!exit) {
+            System.out.println("\nMenu:");
+            System.out.println("1. Add a new order");
+            System.out.println("2. Update an order");
+            System.out.println("3. Delete an order");
+            System.out.println("4. Display orders");
+            System.out.println("5. Exit");
+            System.out.print("Enter your choice: ");
+            
+            int choice = scanner.nextInt();
+            scanner.nextLine(); 
+            
+            switch (choice) {
+                case 1:
+                    addNewOrder(scanner);
+                    break;
+                case 2:
+                    updateOrder(scanner);
+                    break;
+                case 3:
+                    deleteOrder(scanner);
+                    break;
+                case 4:
+                    displayOrders(scanner);
+                    break;
+                case 5:
+                    exit = true;
+                    break;
+                default:
+                    System.out.println("Invalid choice.");
+                    break;
+            }
+        }
+
+        saveOrdersToFile("C:/Users/HP/Downloads/order.txt");
+        System.out.println("Program exited. Orders saved to file.");
+        scanner.close();
+    }
+
+    private static void loadOrdersFromFile(String filename) {
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                int orderId = Integer.parseInt(parts[0].trim());
+                String customerName = parts[1].trim();
+                String customerAddress = parts[2].trim();
+                String productName = parts[3].trim();
+                int quantity = Integer.parseInt(parts[4].trim());
+                double pricePerUnit = Double.parseDouble(parts[5].trim());
+                String orderStatus = parts[6].trim();
+
+                Order order = new Order(orderId, customerName, customerAddress, productName, quantity, pricePerUnit, orderStatus);
+                orderList.add(order);
+            }
+            System.out.println("Orders loaded successfully from file.");
+        } catch (IOException | NumberFormatException e) {
+            System.out.println("Error loading orders from file: " + e.getMessage());
+        }
+    }
+
+    private static void saveOrdersToFile(String filename) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(filename))) {
+            for (Order order : orderList) {
+                bw.write(order.getOrderId() + "," + order.getCustomerName() + "," + order.getCustomerAddress() + "," +
+                        order.getProductName() + "," + order.getQuantity() + "," + order.getPricePerUnit() + "," +
+                        order.getOrderStatus());
+                bw.newLine();
+            }
+            System.out.println("Orders saved successfully to file.");
+        } catch (IOException e) {
+            System.out.println("Error saving orders to file: " + e.getMessage());
+        }
+    }
+
+    private static void addNewOrder(Scanner scanner) {
+        System.out.print("Enter Order ID: ");
+        int orderId = scanner.nextInt();
+        scanner.nextLine(); 
+
+        for (Order order : orderList) {
+            if (order.getOrderId() == orderId) {
+                System.out.println("Order ID already exists.");
+                return;
+            }
+        }
+
+        System.out.print("Enter Customer Name: ");
+        String customerName = scanner.nextLine();
+        System.out.print("Enter Customer Address: ");
+        String customerAddress = scanner.nextLine();
+        System.out.print("Enter Product Name: ");
+        String productName = scanner.nextLine();
+        System.out.print("Enter Quantity: ");
+        int quantity = scanner.nextInt();
+        System.out.print("Enter Price per Unit: ");
+        double pricePerUnit = scanner.nextDouble();
+        scanner.nextLine(); 
+        System.out.print("Enter Order Status: ");
+        String orderStatus = scanner.nextLine();
+
+        Order order = new Order(orderId, customerName, customerAddress, productName, quantity, pricePerUnit, orderStatus);
+        orderList.add(order);
+        System.out.println("Order added successfully.");
+    }
+
+    private static void updateOrder(Scanner scanner) {
+        System.out.print("Enter Order ID to update: ");
+        int orderId = scanner.nextInt();
+        scanner.nextLine(); 
+
+        Order orderToUpdate = null;
+        for (Order order : orderList) {
+            if (order.getOrderId() == orderId) {
+                orderToUpdate = order;
+                break;
+            }
+        }
+
+        if (orderToUpdate == null) {
+            System.out.println("Order ID not found.");
+            return;
+        }
+
+        System.out.print("Enter new Customer Name (leave blank to keep current): ");
+        String customerName = scanner.nextLine();
+        if (!customerName.isEmpty()) {
+            orderToUpdate.setCustomerName(customerName);
+        }
+
+        System.out.print("Enter new Customer Address (leave blank to keep current): ");
+        String customerAddress = scanner.nextLine();
+        if (!customerAddress.isEmpty()) {
+            orderToUpdate.setCustomerAddress(customerAddress);
+        }
+
+        System.out.print("Enter new Product Name (leave blank to keep current): ");
+        String productName = scanner.nextLine();
+        if (!productName.isEmpty()) {
+            orderToUpdate.setProductName(productName);
+        }
+
+        System.out.print("Enter new Quantity (leave blank to keep current): ");
+        String quantityStr = scanner.nextLine();
+        if (!quantityStr.isEmpty()) {
+            int quantity = Integer.parseInt(quantityStr);
+            orderToUpdate.setQuantity(quantity);
+        }
+
+        System.out.print("Enter new Price per Unit (leave blank to keep current): ");
+        String pricePerUnitStr = scanner.nextLine();
+        if (!pricePerUnitStr.isEmpty()) {
+            double pricePerUnit = Double.parseDouble(pricePerUnitStr);
+            orderToUpdate.setPricePerUnit(pricePerUnit);
+        }
+
+        System.out.print("Enter new Order Status (leave blank to keep current): ");
+        String orderStatus = scanner.nextLine();
+        if (!orderStatus.isEmpty()) {
+            orderToUpdate.setOrderStatus(orderStatus);
+        }
+
+        System.out.println("Order updated successfully.");
+    }
+
+    private static void deleteOrder(Scanner scanner) {
+        System.out.print("Enter Order ID to delete: ");
+        int orderId = scanner.nextInt();
+        scanner.nextLine(); 
+
+        Order orderToDelete = null;
+        for (Order order : orderList) {
+            if (order.getOrderId() == orderId) {
+                orderToDelete = order;
+                break;
+            }
+        }
+
+        if (orderToDelete == null) {
+            System.out.println("Order ID not found.");
+            return;
+        }
+
+        orderList.remove(orderToDelete);
+        System.out.println("Order deleted successfully.");
+    }
+
+    private static void displayOrders(Scanner scanner) {
+        System.out.println("Display options:");
+        System.out.println("1. All orders");
+        System.out.println("2. Orders by customer");
+        System.out.println("3. Orders by product");
+        System.out.println("4. Orders by status");
+        System.out.print("Enter your choice: ");
+        int choice = scanner.nextInt();
+        scanner.nextLine(); 
+
+        switch (choice) {
+            case 1:
+                // Display all orders
+                displayAllOrders();
+                break;
+            case 2:
+                // Display orders by customer
+                displayOrdersByCustomer(scanner);
+                break;
+            case 3:
+                // Display orders by product
+                displayOrdersByProduct(scanner);
+                break;
+            case 4:
+                // Display orders by status
+                displayOrdersByStatus(scanner);
+                break;
+            default:
+                System.out.println("Invalid choice.");
+        }
+    }
+
+    private static void displayAllOrders() {
+        for (Order order : orderList) {
+            System.out.println(order);
+        }
+    }
+
+    private static void displayOrdersByCustomer(Scanner scanner) {
+        System.out.print("Enter Customer Name: ");
+        String customerName = scanner.nextLine();
+        boolean found = false;
+        for (Order order : orderList) {
+            if (order.getCustomerName().equalsIgnoreCase(customerName)) {
+                System.out.println(order);
+                found = true;
+            }
+        }
+        if (!found) {
+            System.out.println("No orders found for customer: " + customerName);
+        }
+    }
+
+    private static void displayOrdersByProduct(Scanner scanner) {
+        System.out.print("Enter Product Name: ");
+        String productName = scanner.nextLine();
+        boolean found = false;
+        for (Order order : orderList) {
+            if (order.getProductName().equalsIgnoreCase(productName)) {
+                System.out.println(order);
+                found = true;
+            }
+        }
+        if (!found) {
+            System.out.println("No orders found for product: " + productName);
+        }
+    }
+
+    private static void displayOrdersByStatus(Scanner scanner) {
+        System.out.print("Enter Order Status: ");
+        String orderStatus = scanner.nextLine();
+        boolean found = false;
+        for (Order order : orderList) {
+            if (order.getOrderStatus().equalsIgnoreCase(orderStatus)) {
+                System.out.println(order);
+                found = true;
+            }
+        }   
+        if (!found) {
+            System.out.println("No orders found with status: " + orderStatus);
+        }
+    }
+}
